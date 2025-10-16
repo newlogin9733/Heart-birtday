@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Tone.js for generating the birthday melody -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+        .font-pacifico {
+            font-family: 'Pacifico', cursive;
+        }
+        /* Heartbeat animation for the entry screen */
+        .animate-heartbeat {
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Fade out animation */
+        .fade-out {
+            animation: fadeOut 0.5s ease-out forwards;
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; transform: scale(1.5); pointer-events: none; }
+        }
+
+        /* Fade in animation */
+        .fade-in {
+            animation: fadeIn 1s ease-in forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Confetti animation */
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: fall 5s linear infinite;
+        }
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Simple spinner for loading state */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #ec4899;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Cake highlight animation */
+        .cake-highlight {
+            border-radius: 0.75rem; /* 12px */
+            animation: glowing 3s ease-in-out infinite;
+        }
+        @keyframes glowing {
+            0%, 100% {
+                box-shadow: 0 0 5px #fff, 0 0 10px #fce7f3, 0 0 15px #fbcfe8, 0 0 20px #ec4899;
+            }
+            50% {
+                box-shadow: 0 0 10px #fff, 0 0 20px #fce7f3, 0 0 30px #fbcfe8, 0 0 40px #ec4899;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+
+    <!-- Entry Screen -->
+    <div id="entry-screen" class="fixed inset-0 z-20 flex flex-col items-center justify-center bg-gray-900 transition-opacity duration-500">
+        <div id="heart-button" class="cursor-pointer">
+            <svg class="w-24 h-24 text-red-500 animate-heartbeat" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path></svg>
+        </div>
+        <p class="mt-4 text-lg text-gray-300 font-semibold">Tap the heart to celebrate!</p>
+    </div>
+
+    <!-- Main Content -->
+    <main id="main-content" class="hidden min-h-screen flex flex-col items-center justify-center text-center p-4 relative overflow-hidden">
+        <!-- Confetti container -->
+        <div id="confetti-container" class="absolute inset-0 pointer-events-none"></div>
+
+        <div class="z-10 w-full max-w-3xl">
+            <div class="fade-in" style="animation-delay: 0.2s;">
+                <h1 id="greeting-header" class="font-pacifico text-5xl md:text-7xl text-pink-400 drop-shadow-lg">
+                    Happy Birthday!
+                </h1>
+                <p class="mt-4 text-lg md:text-2xl text-gray-200 max-w-2xl mx-auto">
+                    Wishing you a day filled with love, laughter, and all the things that make you happy. May your year ahead be as amazing as you are!
+                </p>
+                <!-- Highlighted Cake Photo -->
+                <img src="https://images.unsplash.com/photo-1588195538326-c5b1e9f80a1b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
+                     alt="A colorful birthday cake with candles" 
+                     class="mt-8 w-full max-w-sm h-auto object-cover cake-highlight mx-auto"
+                     onerror="this.onerror=null;this.src='https://placehold.co/400x300/1a202c/ec4899?text=Happy+Birthday+Cake';">
+            </div>
+
+            <!-- Gemini API Section -->
+            <div class="mt-12 bg-gray-800/50 backdrop-blur-sm p-6 rounded-2xl border border-gray-700 w-full fade-in" style="animation-delay: 0.8s;">
+                <h2 id="ai-header" class="text-2xl font-bold text-pink-300">Create a Personal Wish with AI</h2>
+                <p class="text-gray-400 mt-2 mb-4">Add a keyword (like 'adventurous' or 'kind') to generate a unique message!</p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                    <input type="text" id="keywords-input" placeholder="Optional: Add a keyword" class="bg-gray-700 text-white placeholder-gray-400 rounded-md px-4 py-2 border border-gray-600 focus:ring-2 focus:ring-pink-500 focus:outline-none transition w-full sm:w-auto">
+                    <button id="generate-wish-btn" class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-6 rounded-md transition duration-300 flex items-center justify-center">
+                        Generate Wish
+                    </button>
+                </div>
+                
+                <div id="wish-output-container" class="mt-6 min-h-[100px] bg-gray-900/70 p-4 rounded-lg flex flex-col items-center justify-center text-center">
+                    <p id="wish-output" class="text-gray-300 italic text-lg">Your personalized wish will appear here...</p>
+                    <p id="wisher-signature" class="text-pink-300 font-semibold mt-2 self-end"></p>
+                    <div id="loader" class="loader hidden"></div>
+                </div>
+            </div>
+
+        </div>
+        
+        <!-- Social Media Links -->
+        <footer class="w-full mt-12 pb-6 z-10 fade-in" style="animation-delay: 1.1s;">
+            <p class="text-gray-400 mb-3">Connect with us!</p>
+            <div class="flex justify-center space-x-6">
+                <!-- Telegram, Instagram, Facebook SVGs -->
+                <a href="#" target="_blank" class="text-gray-400 hover:text-blue-400 transition-colors duration-300" aria-label="Telegram"><svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.84c-.34.58-.65 1.12-1.02 1.62-.37.5-.83.92-1.33 1.25-.5.33-1.03.56-1.6.66-.58.1-1.17.09-1.76-.03-.59-.12-1.17-.33-1.73-.64-.56-.3-1.1-.68-1.58-1.14l-.14-.13a.97.97 0 01-.36-.75c0-.27.13-.52.34-.7.21-.18.49-.28.78-.28.1 0 .2.02.3.05.1.03.2.07.28.12.3.17.6.3.92.42.32.12.65.2.98.24.34.04.68.02.98-.06.3-.08.58-.22.82-.4.24-.18.42-.42.54-.68.12-.27.18-.55.18-.84 0-.29-.06-.57-.18-.84-.12-.27-.29-.5-.51-.68-.22-.18-.48-.32-.77-.4-.29-.08-.59-.12-.9-.12-.31 0-.61.04-.9.12-.29.08-.57.2-.82.35-.25.15-.47.33-.66.54l-.16.17c-.12.13-.2.3-.2.48 0 .19.07.36.2.49l.16.16c.11.1.25.15.39.15s.28-.05.39-.15c.2-.17.43-.31.68-.42.25-.11.52-.18.8-.23.28-.05.57-.06.85-.04.28.02.56.08.82.18.26.1.5.24.7.42.2.18.36.4.48.65.12.25.18.52.18.8s-.06.55-.18.8c-.12.25-.28.48-.48.65-.2.17-.44.3-.7.4-.26.1-.53.15-.82.17-.28.02-.57.01-.85-.02-.28-.03-.56-.08-.82-.17-.26-.09-.5-.22-.7-.37-.2-.15-.37-.33-.5-.53l-.12-.17c-.03-.04-.05-.08-.08-.12a.62.62 0 00-.17-.18.45.45 0 00-.2-.07.4.4 0 00-.24.03c-.1.04-.18.1-.24.18-.06.08-.1.17-.1.27 0 .1.03.2.1.28l.12.17c.1.13.23.25.37.35.14.1.3.18.47.25.17.07.34.12.52.16.18.04.37.06.56.06.33 0 .66-.05.98-.14.32-.09.62-.23.9-.4.28-.17.54-.38.75-.63.21-.25.38-.53.5-.84z"/></svg></a>
+                <a href="#" target="_blank" class="text-gray-400 hover:text-pink-500 transition-colors duration-300" aria-label="Instagram"><svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.94 12.87c-.24.62-.64 1.16-1.16 1.58-.52.42-1.12.72-1.78.88-.67.16-1.34.2-2.02.1-.68-.08-1.33-.3-1.92-.64-.6-.34-1.12-.8-1.52-1.36s-.68-1.2-.8-1.88c-.13-.68-.1-1.38.08-2.06.18-.68.5-1.32 1-1.88.5-.56 1.1-1 1.76-1.28.67-.28 1.36-.4 2.06-.34.7.06 1.38.28 2 .64.6.36 1.12.84 1.52 1.4.4.56.68 1.2.8 1.88.12.68.1 1.38-.08 2.06zm-1.5-1.99c-.1-.5-.3-.96-.62-1.34-.32-.38-.73-.68-1.2-.86-.46-.18-.96-.24-1.46-.18-.5.06-1 .28-1.4.6-.4.32-.7.74-.86 1.2-.16.46-.22.96-.16 1.46.06.5.28 1 .6 1.4s.74.7 1.2.86c.46.16.96.22 1.46.16.5-.06 1-.28 1.4-.6.4-.32.7-.74.86-1.2.16-.46.22-.96.16-1.46z"/></svg></a>
+                <a href="#" target="_blank" class="text-gray-400 hover:text-blue-600 transition-colors duration-300" aria-label="Facebook"><svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.14 10.75h-1.89v5.5h-2.37v-5.5H9.69V9.06h1.19V7.9c0-.84.42-2.11 2.11-2.11h1.59v1.68h-1.07c-.45 0-.53.21-.53.56v.94h1.61l-.22 1.69z"/></svg></a>
+            </div>
+        </footer>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- PERSONALIZE HERE ---
+            // Change these two names to create a custom birthday card!
+            const BIRTHDAY_PERSON_NAME = "Jane"; // Replace with the birthday person's name
+            const WISHER_NAME = "John";        // Replace with your name
+            // ------------------------
+
+            const heartButton = document.getElementById('heart-button');
+            const entryScreen = document.getElementById('entry-screen');
+            const mainContent = document.getElementById('main-content');
+            const confettiContainer = document.getElementById('confetti-container');
+            const greetingHeader = document.getElementById('greeting-header');
+            const aiHeader = document.getElementById('ai-header');
+            
+            const generateBtn = document.getElementById('generate-wish-btn');
+            const keywordsInput = document.getElementById('keywords-input');
+            const wishOutput = document.getElementById('wish-output');
+            const wisherSignature = document.getElementById('wisher-signature');
+            const loader = document.getElementById('loader');
+
+            // --- Set Personalized Content ---
+            greetingHeader.textContent = `Happy Birthday, ${BIRTHDAY_PERSON_NAME}!`;
+            aiHeader.textContent = `Create a Special Wish for ${BIRTHDAY_PERSON_NAME}`;
+
+
+            heartButton.addEventListener('click', () => {
+                Tone.start().then(playBirthdaySong).catch(e => console.error("Could not start audio:", e));
+                entryScreen.classList.add('fade-out');
+                setTimeout(() => {
+                    entryScreen.classList.add('hidden');
+                    mainContent.classList.remove('hidden');
+                    createConfetti();
+                }, 500);
+            });
+
+            function playBirthdaySong() {
+                const synth = new Tone.Synth().toDestination();
+                const now = Tone.now();
+                const notes = [
+                    { note: "C4", duration: "8n", time: now }, { note: "C4", duration: "8n", time: now + 0.25 },
+                    { note: "D4", duration: "4n", time: now + 0.5 }, { note: "C4", duration: "4n", time: now + 1 },
+                    { note: "F4", duration: "4n", time: now + 1.5 }, { note: "E4", duration: "2n", time: now + 2 },
+                    { note: "C4", duration: "8n", time: now + 3 }, { note: "C4", duration: "8n", time: now + 3.25 },
+                    { note: "D4", duration: "4n", time: now + 3.5 }, { note: "C4", duration: "4n", time: now + 4 },
+                    { note: "G4", duration: "4n", time: now + 4.5 }, { note: "F4", duration: "2n", time: now + 5 },
+                    { note: "C4", duration: "8n", time: now + 6 }, { note: "C4", duration: "8n", time: now + 6.25 },
+                    { note: "C5", duration: "4n", time: now + 6.5 }, { note: "A4", duration: "4n", time: now + 7 },
+                    { note: "F4", duration: "4n", time: now + 7.5 }, { note: "E4", duration: "4n", time: now + 8 },
+                    { note: "D4", duration: "2n", time: now + 8.5 }, { note: "A#4", duration: "8n", time: now + 9.5 },
+                    { note: "A#4", duration: "8n", time: now + 9.75 }, { note: "A4", duration: "4n", time: now + 10 },
+                    { note: "F4", duration: "4n", time: now + 10.5 }, { note: "G4", duration: "4n", time: now + 11 },
+                    { note: "F4", duration: "2n", time: now + 11.5 }
+                ];
+                notes.forEach(n => synth.triggerAttackRelease(n.note, n.duration, n.time));
+            }
+
+            function createConfetti() {
+                const colors = ['#f43f5e', '#ec4899', '#d946ef', '#a855f7', '#8b5cf6'];
+                for (let i = 0; i < 100; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = `${Math.random() * 100}vw`;
+                    confetti.style.top = `${Math.random() * -50}vh`;
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = `${Math.random() * 2}s`;
+                    confetti.style.animationDuration = `${3 + Math.random() * 3}s`;
+                    confettiContainer.appendChild(confetti);
+                }
+            }
+
+            generateBtn.addEventListener('click', generateBirthdayWish);
+
+            async function generateBirthdayWish() {
+                const keywords = keywordsInput.value.trim();
+
+                const prompt = `As a friend named ${WISHER_NAME}, write a short, heartfelt, and creative birthday message to ${BIRTHDAY_PERSON_NAME}. Their friend describes them with this keyword: "${keywords}". Keep the message under 50 words and make it personal and warm. Do not sign the message with the wisher's name at the end; just write the message itself.`;
+
+                showLoading(true);
+
+                const apiKey = ""; // API key is managed by the environment
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+                const payload = { contents: [{ parts: [{ text: prompt }] }] };
+
+                try {
+                    const response = await fetchWithRetry(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) throw new Error(`API error: ${response.statusText}`);
+                    
+                    const result = await response.json();
+                    const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                    if (generatedText) {
+                        wishOutput.textContent = `"${generatedText.trim()}"`;
+                        wishOutput.classList.remove('italic');
+                        wisherSignature.textContent = `All the best,\n- ${WISHER_NAME}`;
+                    } else {
+                        throw new Error("No content generated.");
+                    }
+                } catch (error) {
+                    console.error('Error fetching birthday wish:', error);
+                    wishOutput.textContent = "Sorry, I couldn't create a wish right now. Please try again.";
+                    wishOutput.classList.add('italic');
+                } finally {
+                    showLoading(false);
+                }
+            }
+            
+            async function fetchWithRetry(url, options, retries = 3, delay = 1000) {
+                for (let i = 0; i < retries; i++) {
+                    try {
+                        return await fetch(url, options);
+                    } catch (error) {
+                        if (i === retries - 1) throw error;
+                        await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
+                    }
+                }
+            }
+
+            function showLoading(isLoading) {
+                wisherSignature.textContent = ""; // Clear signature during loading
+                if (isLoading) {
+                    wishOutput.classList.add('hidden');
+                    loader.classList.remove('hidden');
+                } else {
+                    loader.classList.add('hidden');
+                    wishOutput.classList.remove('hidden');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+
